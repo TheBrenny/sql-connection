@@ -1,3 +1,5 @@
+package com.thebrenny.sqlconnection;
+
 import java.sql.SQLException;
 
 @FunctionalInterface

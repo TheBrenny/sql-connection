@@ -1,3 +1,5 @@
+package com.thebrenny.sqlconnection;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -15,6 +17,7 @@ public class SQLConnection {
 	private String pass;
 	
 	private Connection connection;
+	private Properties properties;
 	private boolean connected = false;
 	private LinkedList<Query> openQueries;
 	private LinkedList<Query> closedQueries;
@@ -22,13 +25,24 @@ public class SQLConnection {
 	
 	public SQLConnection(String url, String db, String user, String pass) {
 		this.url = url;
+		this.properties = new Properties();
+		this.properties.setProperty("retainStatementAfterResultSetClose", "true");
+		this.properties.setProperty("user", (this.user = user));
+		this.properties.setProperty("password", (this.pass = pass));
 		this.db = db;
-		this.user = user;
-		this.pass = pass;
 		this.driver = Driver.getDefault();
 	}
 	public SQLConnection setDriver(Driver driver) {
 		this.driver = driver;
+		return this;
+	}
+	public SQLConnection setProperties(String ... props) {
+		if(props.length % 2 != 0) Util.debug("The key:value pairing for props isn't even!");
+		String val = "";
+		for(int i = 0; i < props.length; i += 2) {
+			val = i + 1 < props.length ? props[i + 1] : null;
+			this.properties.setProperty(props[i], val);
+		}
 		return this;
 	}
 	public SQLConnection cacheQueries(boolean toggle) {
@@ -48,12 +62,7 @@ public class SQLConnection {
 			Class.forName(driver.driverClass);
 			String jdbcUrl = "jdbc:" + driver.jdbcProtocol + ":" + url + db;
 			Util.debug("Connecting to DB ... [" + jdbcUrl + "|" + user + "|**********]");
-			Properties props = new Properties();
-			props.setProperty("retainStatementAfterResultSetClose", "true");
-			props.setProperty("user", user);
-			props.setProperty("password", pass);
-			props.setProperty("useSSL", "false");
-			connection = DriverManager.getConnection(jdbcUrl, props);
+			connection = DriverManager.getConnection(jdbcUrl, this.properties);
 			connected = true;
 			Util.debug("Connected!");
 		} catch(SQLException e) {
@@ -151,6 +160,16 @@ public class SQLConnection {
 	
 	public enum Driver {
 		MYSQL("com.mysql.jdbc.Driver", "mysql");
+		/*
+		 * The plan is to change this to enable users to add their own Drivers,
+		 * without the need of an enum.
+		 * That way, a user could do something like:
+		 * . Driver.register("mysql") // OR
+		 * . Driver.register("sqllite")
+		 * . Driver.register("com.somejdbc.Driver")
+		 * Therefore, all popular drivers will be handled, and users can use the
+		 * full reflection name as well.
+		 */
 		
 		public final String driverClass;
 		public final String jdbcProtocol;

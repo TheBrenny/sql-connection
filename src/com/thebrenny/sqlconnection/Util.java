@@ -1,28 +1,7 @@
+package com.thebrenny.sqlconnection;
+
 public class Util {
 	private static boolean debugging = false;
-	
-	public static long now() {
-		return System.currentTimeMillis();
-	}
-	public static String formatTime(long time) {
-		return formatTime(time, false);
-	}
-	public static String formatTime(long time, boolean withMs) {
-		String ret = "";
-		long days = (time / 1000 / 60 / 60 / 24);
-		long hours = (time / 1000 / 60 / 60) % 24;
-		long mins = (time / 1000 / 60) % 60;
-		long secs = (time / 1000) % 60;
-		time = time % 1000;
-		
-		if(days > 0) ret += days + "days ";
-		if(hours > 0) ret += hours + "hours ";
-		if(mins > 0) ret += mins + "mins ";
-		if(secs > 0) ret += secs + "secs ";
-		if(withMs && time > 0) ret += time + "ms ";
-		
-		return ret;
-	}
 	
 	public static void setDebugging(boolean toggle) {
 		debug("Debugging " + (toggle ? "on" : "off"));
